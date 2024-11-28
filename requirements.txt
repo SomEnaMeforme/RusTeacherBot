@@ -1,0 +1,4 @@
+aiogram==3.14.0
+librosa==0.10.2.post1
+sqlalchemy
+soundfile==0.12.1
