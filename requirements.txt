@@ -1,4 +1,7 @@
 aiogram==3.14.0
 librosa==0.10.2.post1
-sqlalchemy
+sqlalchemy==2.0.36
 soundfile==0.12.1
+jiwer==3.0.5
+pydub==0.25.1
+torch==2.5.1
