@@ -4,7 +4,7 @@ BOTTOKEN = config_local.BOTTOKEN
 DATABASE_URL = 'sqlite:///bot_statistics.db'
 
 # Audio Configuration
-SAMPLE_RATE = 16000
+SAMPLE_RATE = 48000
 LANGUAGE = 'ru-RU'
 
 # Logging Configuration
