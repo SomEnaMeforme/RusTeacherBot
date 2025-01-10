@@ -74,3 +74,13 @@ class AudioTranscriber:
         except Exception as e:
             logger.error(f"Unexpected error in transcription: {str(e)}")
             return "Произошла непредвиденная ошибка при обработке аудио", False
+
+    def text_to_audio(self, text: str, message: types.Message):
+        file_id = message.voice.file_id
+        audio_tensor = self.modelTTS.apply_tts(text=text)
+        audio_numpy = audio_tensor.numpy()
+        wav_path = f"{file_id}_answer.ogg"
+        open(wav_path, 'a').close()
+        sf.write(wav_path, audio_numpy, self.sample_rate, format='OGG')
+        dir = pathlib.Path().resolve()
+        return os.path.join(dir, wav_path)
