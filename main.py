@@ -1,11 +1,14 @@
 import logging
+import os
 from typing import Dict, List, Optional
 import asyncio
 from aiogram import Bot, Dispatcher, F, types
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 
 import config
 from datetime import datetime
+
+from answer_creator import AnswerCreator
 from botstats import User, Session, Message, get_db_session, get_session_statistics
 from audio_transcriber import AudioTranscriber
 
@@ -19,6 +22,7 @@ logger = logging.getLogger(__name__)
 bot: Bot = Bot(token=config.BOTTOKEN)
 dp: Dispatcher = Dispatcher()
 transcriber = AudioTranscriber(bot, language=config.LANGUAGE, sample_rate=config.SAMPLE_RATE)
+interlocutor = AnswerCreator()
 active_sessions: Dict[int, int] = {}
 
 
@@ -85,8 +89,10 @@ async def voice_message_handler(message: types.Message) -> None:
             response_text = f"🎙️ {text}"
         elif has_errors:
             response_text = f"⚠️ {error_description}\n\n{answer}"
-        
-        await message.reply(response_text, reply_markup=get_keyboard())
+        path_to_voice = transcriber.text_to_audio(response_text, message)
+        voice_file = FSInputFile(path=path_to_voice)
+        await message.answer_voice(voice=voice_file)
+        os.remove(path_to_voice)
         
     except Exception as e:
         logger.error(f"Error processing voice message: {str(e)}")
@@ -128,15 +134,7 @@ async def show_statistics(message: types.Message) -> None:
     await message.reply(stats_text, reply_markup=get_keyboard())
 
 def create_answer(message: str) -> str:
-    return message
-
-
-def text_to_audio():
-    pass
-
-
-def keyboard_handler():
-    pass
+    return interlocutor.create_answer(message)
 
 
 async def main():
