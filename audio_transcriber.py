@@ -1,5 +1,5 @@
 import logging
-from typing import  Tuple
+from typing import Tuple
 import soundfile as sf
 import speech_recognition as sr
 from aiogram import types
@@ -8,6 +8,7 @@ import pathlib
 import os
 import torch
 from aiogram.client.bot import Bot
+import numpy as np
 
 logger = logging.getLogger(__name__)
 FRAMES_PER_SECOND = 44100
@@ -77,10 +78,17 @@ class AudioTranscriber:
 
     def text_to_audio(self, text: str, message: types.Message):
         file_id = message.voice.file_id
-        audio_tensor = self.modelTTS.apply_tts(text=text)
-        audio_numpy = audio_tensor.numpy()
         wav_path = f"{file_id}_answer.ogg"
         open(wav_path, 'a').close()
-        sf.write(wav_path, audio_numpy, self.sample_rate, format='OGG')
+        sentences = text.split('.')
+        audio_tensor = self.modelTTS.apply_tts(text=sentences[0])
+        result_audio = audio_tensor.numpy()
+        for i in range(1, len(sentences)):
+            sentence = sentences[i]
+            if (sentence != ''):
+                audio_tensor = self.modelTTS.apply_tts(text=sentence)
+                audio_numpy = audio_tensor.numpy()
+                result_audio = np.concatenate((result_audio, audio_numpy))
+        sf.write(wav_path, result_audio, self.sample_rate, format='OGG')
         dir = pathlib.Path().resolve()
         return os.path.join(dir, wav_path)
